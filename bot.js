@@ -1,7 +1,10 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const QRCode = require('qrcode');
 const http = require('http');
+const path = require('path');
 const { WELCOME_MESSAGE, MENU_OPTIONS, getResponse } = require('./menu');
+
+const LOGO = MessageMedia.fromFilePath(path.join(__dirname, 'logo.png'));
 
 const SESSION_PATH = process.env.SESSION_PATH || './session';
 const PORT = process.env.PORT || 3000;
@@ -91,7 +94,8 @@ client.on('message_create', async (message) => {
   const match = trimmed.match(/^([1-8])[.\s]*$/);
 
   if (!match) {
-    await message.reply(WELCOME_MESSAGE);
+    const chat = await message.getChat();
+    await chat.sendMessage(LOGO, { caption: WELCOME_MESSAGE });
     return;
   }
 
