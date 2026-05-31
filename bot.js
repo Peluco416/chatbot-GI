@@ -97,7 +97,6 @@ client.on('message_create', async (message) => {
 
   const response = getResponse(match[1]);
   await message.reply(response);
-  await message.reply(MENU_OPTIONS);
 });
 
 client.initialize();
