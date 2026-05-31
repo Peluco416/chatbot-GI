@@ -1,8 +1,40 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode');
+const http = require('http');
 const { WELCOME_MESSAGE, getResponse } = require('./menu');
 
 const SESSION_PATH = process.env.SESSION_PATH || './session';
+const PORT = process.env.PORT || 3000;
+
+let qrImageData = null;
+
+// Servidor HTTP simples para exibir o QR code como imagem
+const server = http.createServer(async (req, res) => {
+  if (req.url === '/qr') {
+    if (!qrImageData) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end('<h2>QR code ainda não disponível. Aguarde alguns segundos e recarregue.</h2>');
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`
+      <html><body style="display:flex;flex-direction:column;align-items:center;font-family:sans-serif;padding:40px">
+        <h2>GarageINN — Escaneie com o WhatsApp Business</h2>
+        <img src="${qrImageData}" style="width:300px;height:300px"/>
+        <p>Vá em <b>Configurações → Aparelhos conectados → Conectar aparelho</b></p>
+        <p><small>Esta página atualiza automaticamente.</small></p>
+        <script>setTimeout(()=>location.reload(),10000)</script>
+      </body></html>
+    `);
+    return;
+  }
+  res.writeHead(302, { Location: '/qr' });
+  res.end();
+});
+
+server.listen(PORT, () => {
+  console.log(`Servidor QR disponível na porta ${PORT}`);
+});
 
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
@@ -16,9 +48,9 @@ const client = new Client({
   },
 });
 
-client.on('qr', (qr) => {
-  console.log('Escaneie o QR code abaixo com o WhatsApp Business:');
-  qrcode.generate(qr, { small: true });
+client.on('qr', async (qr) => {
+  qrImageData = await QRCode.toDataURL(qr);
+  console.log('QR code disponível em: /qr');
 });
 
 client.on('ready', () => {
