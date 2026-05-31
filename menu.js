@@ -1,6 +1,4 @@
-const WELCOME_MESSAGE = `Olá! Seja bem-vindo à *GarageINN Estacionamentos* 🅿️
-
-Como podemos te ajudar? Digite o número da opção desejada:
+const MENU_OPTIONS = `Como podemos te ajudar? Digite o número da opção desejada:
 
 1️⃣ – Novo mensalista
 2️⃣ – Aumento de vagas no contrato
@@ -10,6 +8,10 @@ Como podemos te ajudar? Digite o número da opção desejada:
 6️⃣ – Cancelamento
 7️⃣ – Ouvidoria
 8️⃣ – Trabalhe Conosco`;
+
+const WELCOME_MESSAGE = `Olá! Seja bem-vindo à *GarageINN Estacionamentos* 🅿️
+
+${MENU_OPTIONS}`;
 
 const RESPONSES = {
   '1': 'Deixe seus dados que já entraremos em contato.',
@@ -33,4 +35,4 @@ function getResponse(text) {
   return RESPONSES[normalized] || INVALID_MESSAGE;
 }
 
-module.exports = { WELCOME_MESSAGE, RESPONSES, getResponse };
+module.exports = { WELCOME_MESSAGE, MENU_OPTIONS, RESPONSES, getResponse };

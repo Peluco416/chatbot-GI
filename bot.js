@@ -1,7 +1,7 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const QRCode = require('qrcode');
 const http = require('http');
-const { WELCOME_MESSAGE, getResponse } = require('./menu');
+const { WELCOME_MESSAGE, MENU_OPTIONS, getResponse } = require('./menu');
 
 const SESSION_PATH = process.env.SESSION_PATH || './session';
 const PORT = process.env.PORT || 3000;
@@ -97,7 +97,7 @@ client.on('message_create', async (message) => {
 
   const response = getResponse(match[1]);
   await message.reply(response);
-  await message.reply(WELCOME_MESSAGE);
+  await message.reply(MENU_OPTIONS);
 });
 
 client.initialize();
