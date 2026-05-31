@@ -65,25 +65,37 @@ client.on('disconnected', (reason) => {
   console.warn('Bot desconectado:', reason);
 });
 
-client.on('message', async (message) => {
+// Cooldown por chat para evitar respostas duplicadas (2 segundos)
+const lastReply = new Map();
+
+client.on('message_create', async (message) => {
+  // Ignora mensagens enviadas pelo próprio bot
+  if (message.fromMe) return;
+
   // Ignora mensagens de grupos
   if (message.from.endsWith('@g.us')) return;
 
-  // Ignora mensagens do próprio bot
-  if (message.fromMe) return;
+  // Ignora mensagens que não são texto simples
+  if (message.type !== 'chat') return;
+
+  // Evita resposta duplicada no mesmo chat em menos de 2s
+  const now = Date.now();
+  const last = lastReply.get(message.from) || 0;
+  if (now - last < 2000) return;
+  lastReply.set(message.from, now);
 
   const text = message.body || '';
   const trimmed = text.trim();
 
-  // Primeira mensagem ou mensagem não numérica: boas-vindas + menu
-  const isMenuOption = /^[1-8]$/.test(trimmed);
+  // Aceita "1" a "8" com possíveis espaços ou pontuação ao redor
+  const match = trimmed.match(/^([1-8])[.\s]*$/);
 
-  if (!isMenuOption) {
+  if (!match) {
     await message.reply(WELCOME_MESSAGE);
     return;
   }
 
-  const response = getResponse(trimmed);
+  const response = getResponse(match[1]);
   await message.reply(response);
   await message.reply(WELCOME_MESSAGE);
 });
