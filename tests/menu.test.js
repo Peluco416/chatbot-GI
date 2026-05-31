@@ -14,11 +14,11 @@ describe('WELCOME_MESSAGE', () => {
 
 describe('getResponse', () => {
   test('opção 1 retorna mensagem de novo mensalista', () => {
-    expect(getResponse('1')).toContain('dados');
+    expect(getResponse('1')).toContain('especialista');
   });
 
   test('opção 2 retorna mensagem de aumento de vagas', () => {
-    expect(getResponse('2')).toContain('Razão Social');
+    expect(getResponse('2')).toContain('comercial@garageinn.com.br');
   });
 
   test('opção 3 retorna link do portal Omie', () => {
@@ -30,7 +30,7 @@ describe('getResponse', () => {
   });
 
   test('opção 5 retorna mensagem de selo convênio', () => {
-    expect(getResponse('5')).toContain('nome');
+    expect(getResponse('5')).toContain('comercial@garageinn.com.br');
   });
 
   test('opção 6 retorna link de cancelamento', () => {
@@ -52,6 +52,6 @@ describe('getResponse', () => {
   });
 
   test('aceita número com espaços extras', () => {
-    expect(getResponse(' 1 ')).toContain('dados');
+    expect(getResponse(' 1 ')).toContain('especialista');
   });
 });
