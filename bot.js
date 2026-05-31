@@ -4,7 +4,7 @@ const http = require('http');
 const path = require('path');
 const { WELCOME_MESSAGE, MENU_OPTIONS, getResponse } = require('./menu');
 
-const LOGO = MessageMedia.fromFilePath(path.join(__dirname, 'logo.png'));
+const LOGO = MessageMedia.fromFilePath(path.join(__dirname, 'logo.jpg'));
 
 const SESSION_PATH = process.env.SESSION_PATH || './session';
 const PORT = process.env.PORT || 3000;
