@@ -42,6 +42,7 @@ server.listen(PORT, () => {
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
   puppeteer: {
+    ...(process.env.CHROME_PATH && { executablePath: process.env.CHROME_PATH }),
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
