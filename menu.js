@@ -9,12 +9,12 @@ const MENU_OPTIONS = `Como podemos te ajudar? Digite o número da opção deseja
 7️⃣ – Ouvidoria
 8️⃣ – Trabalhe Conosco`;
 
-const WELCOME_MESSAGE = `Olá! Seja bem-vindo à *GarageINN Estacionamentos* 🅿️
+const WELCOME_MESSAGE = `Olá! Seja bem-vindo à *GarageINN Estacionamentos*
 
 ${MENU_OPTIONS}`;
 
 const RESPONSES = {
-  '1': 'Obrigado pelo interesse, nosso especialista já entrará em contato.',
+  '1': 'Obrigado pelo seu interesse! Em breve, um de nossos especialistas falará com você.\nEnquanto isso, conte um pouco mais sobre sua necessidade. Você já sabe qual unidade deseja contratar sua vaga ou deseja receber informações?',
   '2': 'Por favor, encaminhe um email para comercial@garageinn.com.br, com a Razão Social, CNPJ e a quantidade de vagas que deseja, informando se carro ou moto.',
   '3': `Caso sua solicitação seja para segunda via de boleto ou verificar suas informações financeiras, acesse o portal Omie: https://app.omie.com.br/login
 

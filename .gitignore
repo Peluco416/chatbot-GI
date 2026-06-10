@@ -2,3 +2,5 @@ node_modules/
 session/
 .env
 *.log
+.wwebjs_cache/
+bot_output.log

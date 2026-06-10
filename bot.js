@@ -2,7 +2,7 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const QRCode = require('qrcode');
 const http = require('http');
 const path = require('path');
-const { WELCOME_MESSAGE, MENU_OPTIONS, getResponse } = require('./menu');
+const { WELCOME_MESSAGE, getResponse } = require('./menu');
 
 const LOGO = MessageMedia.fromFilePath(path.join(__dirname, 'logo.jpg'));
 
@@ -11,7 +11,14 @@ const PORT = process.env.PORT || 3000;
 
 let qrImageData = null;
 
-// Servidor HTTP simples para exibir o QR code como imagem
+// Evita crash por erros não tratados — loga e continua
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+
 const server = http.createServer(async (req, res) => {
   if (req.url === '/qr') {
     if (!qrImageData) {
@@ -39,69 +46,88 @@ server.listen(PORT, () => {
   console.log(`Servidor QR disponível na porta ${PORT}`);
 });
 
-const client = new Client({
-  authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
-  puppeteer: {
-    ...(process.env.CHROME_PATH && { executablePath: process.env.CHROME_PATH }),
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-    ],
-  },
-});
+function createClient() {
+  const c = new Client({
+    authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
+    puppeteer: {
+      ...(process.env.CHROME_PATH && { executablePath: process.env.CHROME_PATH }),
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+    },
+    webVersionCache: {
+      type: 'local',
+    },
+  });
 
-client.on('qr', async (qr) => {
-  qrImageData = await QRCode.toDataURL(qr);
-  console.log('QR code disponível em: /qr');
-});
+  c.on('qr', async (qr) => {
+    qrImageData = await QRCode.toDataURL(qr);
+    console.log('QR code disponível em: /qr');
+  });
 
-client.on('ready', () => {
-  console.log('Bot GarageINN conectado e pronto!');
-});
+  c.on('ready', () => {
+    console.log('Bot GarageINN conectado e pronto!');
+  });
 
-client.on('auth_failure', (msg) => {
-  console.error('Falha de autenticação:', msg);
-});
+  c.on('auth_failure', (msg) => {
+    console.error('Falha de autenticação:', msg);
+  });
 
-client.on('disconnected', (reason) => {
-  console.warn('Bot desconectado:', reason);
-});
+  c.on('disconnected', (reason) => {
+    console.warn('Bot desconectado:', reason, '— reconectando em 10s...');
+    setTimeout(() => {
+      try { c.destroy(); } catch (_) {}
+      createClient();
+    }, 10000);
+  });
 
-// Cooldown por chat para evitar respostas duplicadas (2 segundos)
-const lastReply = new Map();
+  const lastReply = new Map();
+  // Guarda quem já recebeu o menu de boas-vindas
+  const welcomed = new Set();
 
-client.on('message_create', async (message) => {
-  // Ignora mensagens enviadas pelo próprio bot
-  if (message.fromMe) return;
+  c.on('message_create', async (message) => {
+    if (message.fromMe) return;
+    if (message.from.endsWith('@g.us')) return;
+    if (message.type !== 'chat') return;
 
-  // Ignora mensagens de grupos
-  if (message.from.endsWith('@g.us')) return;
+    const now = Date.now();
+    const last = lastReply.get(message.from) || 0;
+    if (now - last < 2000) return;
+    lastReply.set(message.from, now);
 
-  // Ignora mensagens que não são texto simples
-  if (message.type !== 'chat') return;
+    const text = message.body || '';
+    const trimmed = text.trim();
+    const match = trimmed.match(/^([1-8])[.\s]*$/);
 
-  // Evita resposta duplicada no mesmo chat em menos de 2s
-  const now = Date.now();
-  const last = lastReply.get(message.from) || 0;
-  if (now - last < 2000) return;
-  lastReply.set(message.from, now);
+    try {
+      // Primeiro contato: envia logo + menu independente do que digitou
+      if (!welcomed.has(message.from)) {
+        welcomed.add(message.from);
+        try {
+          const chat = await message.getChat();
+          await chat.sendMessage(LOGO, { caption: WELCOME_MESSAGE });
+        } catch (mediaErr) {
+          console.warn('Falha ao enviar logo, enviando só texto:', mediaErr.message);
+          await message.reply(WELCOME_MESSAGE);
+        }
+        return;
+      }
 
-  const text = message.body || '';
-  const trimmed = text.trim();
+      // Contatos seguintes: só responde se for opção válida (1-8)
+      if (!match) return;
 
-  // Aceita "1" a "8" com possíveis espaços ou pontuação ao redor
-  const match = trimmed.match(/^([1-8])[.\s]*$/);
+      const response = getResponse(match[1]);
+      await message.reply(response);
+    } catch (err) {
+      console.error('Erro ao responder mensagem:', err.message);
+    }
+  });
 
-  if (!match) {
-    const chat = await message.getChat();
-    await chat.sendMessage(LOGO, { caption: WELCOME_MESSAGE });
-    return;
-  }
+  c.initialize();
+  return c;
+}
 
-  const response = getResponse(match[1]);
-  await message.reply(response);
-});
-
-client.initialize();
+createClient();
