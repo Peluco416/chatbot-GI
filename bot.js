@@ -47,6 +47,14 @@ server.listen(PORT, () => {
 });
 
 function createClient() {
+  try {
+    const puppeteer = require('puppeteer');
+    console.log('[debug] puppeteer executablePath:', puppeteer.executablePath());
+    console.log('[debug] CHROME_PATH env:', process.env.CHROME_PATH || '(not set)');
+  } catch (e) {
+    console.error('[debug] erro ao resolver puppeteer executablePath:', e.message);
+  }
+
   const c = new Client({
     authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
     puppeteer: {
@@ -57,9 +65,6 @@ function createClient() {
         '--disable-dev-shm-usage',
         '--disable-gpu',
       ],
-    },
-    webVersionCache: {
-      type: 'local',
     },
   });
 
@@ -126,7 +131,10 @@ function createClient() {
     }
   });
 
-  c.initialize();
+  console.log('[debug] chamando c.initialize()...');
+  c.initialize()
+    .then(() => console.log('[debug] c.initialize() resolveu com sucesso'))
+    .catch((err) => console.error('[debug] c.initialize() rejeitou:', err && err.stack ? err.stack : err));
   return c;
 }
 
