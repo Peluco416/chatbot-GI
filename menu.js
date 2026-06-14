@@ -8,7 +8,7 @@ const MENU_OPTIONS = `Como podemos te ajudar? Digite o número da opção deseja
 6️⃣ – Cancelamento
 7️⃣ – Ouvidoria
 8️⃣ – Trabalhe Conosco
-9️⃣ – Contestação de Valores`;
+9️⃣ – Constestações de Valores`;
 
 const WELCOME_MESSAGE = `Olá! Seja bem-vindo à *GarageINN Estacionamentos*
 
