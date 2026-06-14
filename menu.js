@@ -7,7 +7,8 @@ const MENU_OPTIONS = `Como podemos te ajudar? Digite o número da opção deseja
 5️⃣ – Selo Convênio
 6️⃣ – Cancelamento
 7️⃣ – Ouvidoria
-8️⃣ – Trabalhe Conosco`;
+8️⃣ – Trabalhe Conosco
+9️⃣ – Contestação de Valores`;
 
 const WELCOME_MESSAGE = `Olá! Seja bem-vindo à *GarageINN Estacionamentos*
 
@@ -26,9 +27,10 @@ Esse portal dará acesso à segunda via de boletos e notas fiscais — todo o hi
   '6': 'Por favor, para cancelamento formalizar através do link: https://forms.gle/jEcfJxCkxDMVuMNt7',
   '7': 'Por favor, encaminhar e-mail para renato@garageinn.com.br',
   '8': 'Por favor, preencher o link: https://tinyurl.com/tbconosco',
+  '9': 'Por favor, para contestar algum valor descontado indevidamente, nos encaminhe um email para Contestacoes@garageinn.com.br, nos informando o ocorrido e com os documentos para verificação.',
 };
 
-const INVALID_MESSAGE = 'Opção inválida. Por favor, escolha um número de 1 a 8.';
+const INVALID_MESSAGE = 'Opção inválida. Por favor, escolha um número de 1 a 9.';
 
 function getResponse(text) {
   const normalized = (text || '').trim();

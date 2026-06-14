@@ -186,7 +186,7 @@ function createClient() {
 
     const text = message.body || '';
     const trimmed = text.trim();
-    const match = trimmed.match(/^([1-8])[.\s]*$/);
+    const match = trimmed.match(/^([1-9])[.\s]*$/);
 
     try {
       // Primeiro contato: envia logo + menu independente do que digitou
@@ -205,9 +205,9 @@ function createClient() {
         return;
       }
 
-      // Contatos seguintes: só responde se for opção válida (1-8)
+      // Contatos seguintes: só responde se for opção válida (1-9)
       if (!match) {
-        console.log('[debug] mensagem nao corresponde a opcao 1-8, ignorando');
+        console.log('[debug] mensagem nao corresponde a opcao 1-9, ignorando');
         return;
       }
 
