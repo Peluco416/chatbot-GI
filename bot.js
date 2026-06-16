@@ -4,7 +4,6 @@ const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const { WELCOME_MESSAGE, getResponse } = require('./menu');
-const { startReminderScheduler, startMeetReminderScheduler } = require('./scheduler');
 
 const LOGO = MessageMedia.fromFilePath(path.join(__dirname, 'logo.jpg'));
 
@@ -144,8 +143,6 @@ function createClient() {
   c.on('ready', () => {
     console.log('Bot GarageINN conectado e pronto!');
     console.log('[debug] Numero conectado:', c.info && c.info.wid ? c.info.wid.user : '(desconhecido)');
-    startReminderScheduler(c);
-    startMeetReminderScheduler(c);
 
     if (c.pupPage) {
       c.pupPage.on('error', (e) => {
