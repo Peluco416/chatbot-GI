@@ -41,7 +41,7 @@ const server = http.createServer(async (req, res) => {
         <img src="${qrImageData}" style="width:300px;height:300px"/>
         <p>Vá em <b>Configurações → Aparelhos conectados → Conectar aparelho</b></p>
         <p><small>Esta página atualiza automaticamente.</small></p>
-        <script>setTimeout(()=>location.reload(),10000)</script>
+        <script>setTimeout(()=>location.reload(),25000)</script>
       </body></html>
     `);
     return;
