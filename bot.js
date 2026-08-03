@@ -103,8 +103,10 @@ function createClient() {
 
   const c = new Client({
     authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
+    authTimeoutMs: 0,
     puppeteer: {
       ...(process.env.CHROME_PATH && { executablePath: process.env.CHROME_PATH }),
+      protocolTimeout: 120000,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
