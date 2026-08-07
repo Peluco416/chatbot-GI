@@ -108,13 +108,11 @@ async function connectToWhatsApp() {
   });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    console.log('messages.upsert type:', type, 'count:', messages.length);
     if (type !== 'notify') return;
 
     for (const msg of messages) {
       try {
         const jid = msg.key.remoteJid;
-        console.log('msg de:', jid, '| fromMe:', msg.key.fromMe, '| tipo:', Object.keys(msg.message || {})[0]);
 
         if (!jid) continue;
         if (msg.key.fromMe) continue;
@@ -132,13 +130,10 @@ async function connectToWhatsApp() {
           welcomed.add(jid);
           try {
             const logoBuffer = fs.readFileSync(LOGO_PATH);
-            console.log('Enviando logo para', jid, '- tamanho:', logoBuffer.length);
             await sock.sendMessage(jid, { image: logoBuffer, caption: WELCOME_MESSAGE });
-            console.log('Logo enviado com sucesso');
           } catch (mediaErr) {
             console.warn('Falha ao enviar logo:', mediaErr.message);
             await sock.sendMessage(jid, { text: WELCOME_MESSAGE });
-            console.log('Texto de boas-vindas enviado');
           }
           continue;
         }
