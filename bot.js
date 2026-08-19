@@ -40,7 +40,7 @@ const server = http.createServer((req, res) => {
         <img src="${qrImageData}" style="width:300px;height:300px"/>
         <p>Vá em <b>Configurações → Aparelhos conectados → Conectar aparelho</b></p>
         <p><small>Esta página atualiza automaticamente.</small></p>
-        <script>setTimeout(()=>location.reload(),25000)</script>
+        <script>setTimeout(()=>location.reload(),15000)</script>
       </body></html>
     `);
     return;
@@ -63,6 +63,8 @@ function getTextBody(msg) {
     ''
   );
 }
+
+let reconnectDelay = 5000;
 
 async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
@@ -93,17 +95,30 @@ async function connectToWhatsApp() {
 
     if (connection === 'open') {
       qrImageData = null;
+      reconnectDelay = 5000; // reseta backoff ao conectar com sucesso
       console.log('Bot GarageINN conectado e pronto!');
     }
 
     if (connection === 'close') {
       const code = lastDisconnect?.error?.output?.statusCode;
       const loggedOut = code === DisconnectReason.loggedOut;
-      console.warn(`Conexão fechada (código: ${code}) — reconectando em 5s...`);
+      console.warn(`Conexão fechada (código: ${code}) — reconectando em ${reconnectDelay / 1000}s...`);
+
       if (loggedOut) {
-        console.warn('Sessão encerrada pelo WhatsApp — aguardando novo scan de QR code...');
+        console.warn('Sessão invalidada — limpando e gerando novo QR...');
+        reconnectDelay = 3000;
+        try {
+          for (const entry of fs.readdirSync(SESSION_PATH)) {
+            fs.rmSync(path.join(SESSION_PATH, entry), { recursive: true, force: true });
+          }
+        } catch (e) {
+          console.error('Erro ao limpar sessão:', e.message);
+        }
       }
-      setTimeout(() => connectToWhatsApp(), 5000);
+
+      setTimeout(() => connectToWhatsApp(), reconnectDelay);
+      // backoff exponencial: dobra o delay a cada falha, limite de 2 min
+      reconnectDelay = Math.min(reconnectDelay * 2, 120000);
     }
   });
 
