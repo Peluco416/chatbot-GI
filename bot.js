@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers } = require('@whiskeysockets/baileys');
 const QRCode = require('qrcode');
 const http = require('http');
 const path = require('path');
@@ -81,8 +81,8 @@ async function connectToWhatsApp() {
     auth: state,
     logger: baileysLogger,
     printQRInTerminal: false,
-    browser: ['GarageINN Bot', 'Chrome', '120.0'],
-    getMessage: async () => ({ conversation: '' }),
+    browser: Browsers.ubuntu('Desktop'),
+    getMessage: async () => undefined,
   });
 
   sock.ev.on('creds.update', saveCreds);
