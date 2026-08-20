@@ -65,6 +65,8 @@ function getTextBody(msg) {
 }
 
 let reconnectDelay = 5000;
+let connectionOpenTime = null;
+const MIN_STABLE_MS = 30000; // considera conexão estável após 30s contínuos
 
 async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
@@ -81,8 +83,14 @@ async function connectToWhatsApp() {
     auth: state,
     logger: baileysLogger,
     printQRInTerminal: false,
-    browser: Browsers.ubuntu('Desktop'),
+    browser: Browsers.ubuntu('Desktop'),  // fingerprint padrão do Baileys
     getMessage: async () => undefined,
+    keepAliveIntervalMs: 10000,           // ping a cada 10s — evita timeout por inatividade
+    connectTimeoutMs: 60000,              // aguarda até 60s para estabelecer conexão
+    defaultQueryTimeoutMs: 60000,
+    retryRequestDelayMs: 500,
+    markOnlineOnConnect: false,           // aparece como dispositivo vinculado (menos detecção de bot)
+    syncFullHistory: false,
   });
 
   sock.ev.on('creds.update', saveCreds);
@@ -95,13 +103,21 @@ async function connectToWhatsApp() {
 
     if (connection === 'open') {
       qrImageData = null;
-      reconnectDelay = 5000; // reseta backoff ao conectar com sucesso
+      connectionOpenTime = Date.now();
       console.log('Bot GarageINN conectado e pronto!');
     }
 
     if (connection === 'close') {
       const code = lastDisconnect?.error?.output?.statusCode;
       const loggedOut = code === DisconnectReason.loggedOut;
+
+      // Backoff inteligente: só reseta se a conexão durou mais de 30s
+      const wasStable = connectionOpenTime && (Date.now() - connectionOpenTime) > MIN_STABLE_MS;
+      if (wasStable) {
+        reconnectDelay = 5000;
+      }
+      connectionOpenTime = null;
+
       console.warn(`Conexão fechada (código: ${code}) — reconectando em ${reconnectDelay / 1000}s...`);
 
       if (loggedOut) {
@@ -117,7 +133,6 @@ async function connectToWhatsApp() {
       }
 
       setTimeout(() => connectToWhatsApp(), reconnectDelay);
-      // backoff exponencial: dobra o delay a cada falha, limite de 2 min
       reconnectDelay = Math.min(reconnectDelay * 2, 120000);
     }
   });
