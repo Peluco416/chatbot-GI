@@ -16,6 +16,18 @@ if (process.env.RESET_SESSION === 'true' && fs.existsSync(SESSION_PATH)) {
   console.log('Sessão antiga apagada (RESET_SESSION=true)');
 }
 
+// Limpa sessões Signal corrompidas mantendo o creds.json (sem precisar de novo QR)
+if (process.env.CLEAR_SIGNAL_SESSIONS === 'true' && fs.existsSync(SESSION_PATH)) {
+  let count = 0;
+  for (const entry of fs.readdirSync(SESSION_PATH)) {
+    if (entry !== 'creds.json') {
+      fs.rmSync(path.join(SESSION_PATH, entry), { recursive: true, force: true });
+      count++;
+    }
+  }
+  console.log(`Sessões Signal limpas (${count} arquivos) — autenticação mantida, sem novo QR`);
+}
+
 let qrImageData = null;
 
 const baileysLogger = {
